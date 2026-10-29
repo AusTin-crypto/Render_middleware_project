@@ -1,17 +1,28 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
+// 1. Enable CORS so your Angular app can call this API
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseCors("AllowAngular");
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
+// 2. Create the simple GET endpoint
+app.MapGet("/api/hello", (string name) =>
+{
+    if (string.IsNullOrWhiteSpace(name))
+    {
+        return Results.Ok(new { message = "Hello World!" });
+    }
+    return Results.Ok(new { message = $"Hello World, {name}!" });
+});
 
 app.Run();
